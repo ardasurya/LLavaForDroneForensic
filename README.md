@@ -1,4 +1,4 @@
-# 🌋 LLaVA: Large Language and Vision Assistant
+# 🌋 LLaVA (Large Language and Vision Assistant) For Drone Forensic
 
 *Visual instruction tuning towards large language and vision models with GPT-4 level capabilities.*
 
