@@ -143,7 +143,7 @@ def add_text(state, text, image, image_process_mode, request: gr.Request):
         text = text[:1200]  # Hard cut-off for images
         if '<image>' not in text:
             # text = '<Image><image></Image>' + text
-            text = text + '\n<image>'
+            text = text + ' explain this using context drone have an accident because this image. ' + '\n<image>'
         text = (text, image, image_process_mode)
         if len(state.get_images(return_pil=True)) > 0:
             state = default_conversation.copy()
@@ -168,15 +168,6 @@ def http_bot(state, model_selector, temperature, top_p, max_new_tokens, request:
         if "llava" in model_name.lower():
             if 'llama-2' in model_name.lower():
                 template_name = "llava_llama_2"
-            elif "mistral" in model_name.lower() or "mixtral" in model_name.lower():
-                if 'orca' in model_name.lower():
-                    template_name = "mistral_orca"
-                elif 'hermes' in model_name.lower():
-                    template_name = "chatml_direct"
-                else:
-                    template_name = "mistral_instruct"
-            elif 'llava-v1.6-34b' in model_name.lower():
-                template_name = "chatml_direct"
             elif "v1" in model_name.lower():
                 if 'mmtag' in model_name.lower():
                     template_name = "v1_mmtag"
@@ -249,7 +240,7 @@ def http_bot(state, model_selector, temperature, top_p, max_new_tokens, request:
     try:
         # Stream output
         response = requests.post(worker_addr + "/worker_generate_stream",
-            headers=headers, json=pload, stream=True, timeout=10)
+            headers=headers, json=pload, stream=True, timeout=100000)
         for chunk in response.iter_lines(decode_unicode=False, delimiter=b"\0"):
             if chunk:
                 data = json.loads(chunk.decode())
@@ -288,8 +279,7 @@ def http_bot(state, model_selector, temperature, top_p, max_new_tokens, request:
         fout.write(json.dumps(data) + "\n")
 
 title_markdown = ("""
-# 🌋 LLaVA (Large Language and Vision Assistant) For Drone Forensic
-[[Project Page](https://llava-vl.github.io)] [[Code](https://github.com/haotian-liu/LLaVA)] [[Model](https://github.com/haotian-liu/LLaVA/blob/main/docs/MODEL_ZOO.md)] | 📚 [[LLaVA](https://arxiv.org/abs/2304.08485)] [[LLaVA-v1.5](https://arxiv.org/abs/2310.03744)] [[LLaVA-v1.6](https://llava-vl.github.io/blog/2024-01-30-llava-1-6/)]
+# 🌋 LLaVA: Large Language and Vision Assistant (For Drone Forensic) - Modified By Arda
 """)
 
 tos_markdown = ("""
@@ -340,8 +330,8 @@ def build_demo(embed_mode):
 
                 cur_dir = os.path.dirname(os.path.abspath(__file__))
                 gr.Examples(examples=[
-                    [f"{cur_dir}/examples/extreme_ironing.jpg", "What is unusual about this image?"],
-                    [f"{cur_dir}/examples/waterview.jpg", "What are the things I should be cautious about when I visit here?"],
+                    [f"{cur_dir}/examples/burung.png", "This image took before drone have accident, please explain this image"],
+                    [f"{cur_dir}/examples/drone.png", "This image took before drone have accident, please explain this image"],
                 ], inputs=[imagebox, textbox])
 
                 with gr.Accordion("Parameters", open=False) as parameter_row:
@@ -368,7 +358,6 @@ def build_demo(embed_mode):
             gr.Markdown(tos_markdown)
             gr.Markdown(learn_more_markdown)
         url_params = gr.JSON(visible=False)
-
         # Register listeners
         btn_list = [upvote_btn, downvote_btn, flag_btn, regenerate_btn, clear_btn]
         upvote_btn.click(
